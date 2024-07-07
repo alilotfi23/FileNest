@@ -1,20 +1,30 @@
-# routes/create_folder.py
-
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel
 from pathlib import Path
 import os
 import logging
 
 router = APIRouter()
 
-# BASE_DIR defaults to "file_storage" if it is not defined in the .env file
+# Assuming logging is configured in the main application configuration
+logger = logging.getLogger(__name__)
+
+# Base directory should ideally be set in your application's startup event
 BASE_DIR = os.getenv("BASE_DIR", "file_storage")
-os.makedirs(BASE_DIR, exist_ok=True)
+Path(BASE_DIR).mkdir(exist_ok=True)
 
+class FolderResponse(BaseModel):
+    message: str
 
-@router.post("/folder")
+@router.post("/folder", response_model=FolderResponse)
 async def create_folder(folder_name: str):
-    folder_path = Path(BASE_DIR) / folder_name
-    folder_path.mkdir(parents=True, exist_ok=True)
-    logging.info(f"Folder '{folder_name}' created successfully")
-    return {"message": f"Folder '{folder_name}' created successfully"}
+    try:
+        folder_path = Path(BASE_DIR) / folder_name
+        folder_path.mkdir(parents=True, exist_ok=True)
+        logger.info(f"Folder '{folder_name}' created successfully")
+        return FolderResponse(message=f"Folder '{folder_name}' created successfully")
+    except Exception as e:
+        logger.error(f"Error creating folder '{folder_name}': {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="An error occurred while creating the folder.")
+
