@@ -1,7 +1,7 @@
 
 ## FileNest file manager Service
 
-FileNest is simple API for managing folders and files in a file storage system using FastAPI.
+FileNest is a simple API for managing folders and files in a file storage system using FastAPI.
 
 ## Features
 
